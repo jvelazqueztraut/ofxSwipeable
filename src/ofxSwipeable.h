@@ -9,39 +9,47 @@
 
 #include "ofMain.h"
 
-class ofxScrollable: public ofFbo{
+class ofxSwipeable: public ofFbo{
 public:
     
-    ofxScrollable();
+    ofxSwipeable();
     
-    ~ofxScrollable(){};
+    ~ofxSwipeable(){};
     
-    void load(string path, float w, float h, float f=50.);
+    void load(vector<string> path, float w, float h, float f=50.);
     
     void update();
     
     void reset();
         
-    void setMouseDown(bool m);
+    void setMouse(bool m);
     
     void mouseDragged(ofMouseEventArgs& event);
     void mousePressed(ofMouseEventArgs& event);
     void mouseReleased(ofMouseEventArgs& event);
+    
+    void setIndicator(bool i);
             
     float width,height;
     
-    ofTexture tex;
+    int current;
+    
+    vector<ofTexture> tex;
     float texWidth,texHeight;
     
     float position;
     float destination;
     float velocity;
     
-    float mouse;
-    float mouseDiff;
+    bool mouse;
     float mouseOrigin;
-    float posOrigin;
-    bool mouseDown;
+    float desOrigin;
+
+    bool indicator;
+    float indicatorPos;
+    float indicatorSize;
+    float indicatorGap;
+    float indicatorWidth;
     
     ofTexture fade;
     float fadeSize;

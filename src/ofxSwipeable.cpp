@@ -6,90 +6,112 @@
 //
 //
 
-#include "ofxScrollable.h"
+#include "ofxSwipeable.h"
 
 #define DAMPING 10.
 #define MASS 1.
 #define K 30.
 
-ofxScrollable::ofxScrollable(){
-    mouse=0;
-    mouseDiff=0;
+ofxSwipeable::ofxSwipeable(){
+    mouse=false;
     mouseOrigin=0;
-    posOrigin=0;
-    mouseDown=false;
+    desOrigin=0;
+    
+    ofAddListener(ofEvents().mousePressed,this,&ofxSwipeable::mousePressed);
+    ofAddListener(ofEvents().mouseDragged,this,&ofxSwipeable::mouseDragged);
+    ofAddListener(ofEvents().mouseReleased,this,&ofxSwipeable::mouseReleased);
+    
+    indicator = true;
     
     reset();
 }
 
-void ofxScrollable::load(string path, float w, float h, float f){
+void ofxSwipeable::load(vector<string> path, float w, float h, float f){
     width = w;
     height = h;
     
     ofFbo::allocate(width,height,GL_RGBA32F_ARB);
     
-    ofAddListener(ofEvents().mousePressed,this,&ofxScrollable::mousePressed);
-    ofAddListener(ofEvents().mouseDragged,this,&ofxScrollable::mouseDragged);
-    ofAddListener(ofEvents().mouseReleased,this,&ofxScrollable::mouseReleased);
+    tex.assign(path.size(),ofTexture());
+    for(int i=0;i<path.size();i++){
+        ofPixels imagePixels;
+        ofLoadImage(imagePixels, path[i]);
+        texWidth = imagePixels.getWidth();
+        texHeight = imagePixels.getHeight();
+        tex[i].loadData(imagePixels);
+        tex[i].setAnchorPercent(0.5,0.5);
+    }
     
-    ofPixels imagePixels;
-    ofLoadImage(imagePixels, path);
-    texWidth = imagePixels.getWidth();
-    texHeight = imagePixels.getHeight();
-    tex.loadData(imagePixels);
-    tex.setAnchorPercent(0.5,0.0);
+    indicatorSize = 5;
+    indicatorGap = 20;
+    indicatorWidth = (tex.size()-1) * indicatorGap;
     
     fadeSize = f;
     ofFloatPixels fadePixels;
-    fadePixels.allocate(width,fadeSize,OF_PIXELS_RGBA);
+    fadePixels.allocate(fadeSize,height,OF_PIXELS_RGBA);
     int i=0;
-    for(int y=0;y<(int)fadeSize;y++) {
-        for(int x=0;x<(int)width;x++){
+    for(int y=0;y<(int)height;y++) {
+        for(int x=0;x<(int)fadeSize;x++){
             fadePixels[i+0]=0.;
             fadePixels[i+1]=0.;
             fadePixels[i+2]=0.;
-            fadePixels[i+3]=1.-(y*y)/(fadeSize*fadeSize); //QUADRATIC_EASE_IN
+            fadePixels[i+3]=1.-(x*x)/(fadeSize*fadeSize); //QUADRATIC_EASE_IN
             i+=4;
         }
     }
     fade.loadData(fadePixels);
 }
     
-void ofxScrollable::update(){
+void ofxSwipeable::update(){
         
     ofPushStyle();
     ofFbo::begin();
-    ofEnableBlendMode(OF_BLENDMODE_ADD);
     glBlendFuncSeparate(GL_ONE, GL_SRC_COLOR, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
     ofClear(255,255);
 	ofClear(0, 0);
     ofSetColor(255);
-    tex.draw(width*0.5,position);
+    ofPushMatrix();
+    ofTranslate(position,0);
+    for(int i=0;i<tex.size();i++){
+        if((position+i*width+width)>0 && (position+i*width)<width){
+            tex[i].draw(width*0.5+i*width,height*0.5);
+        }
+    }
+    ofPopMatrix();
     ofEnableBlendMode(OF_BLENDMODE_SUBTRACT);
     ofPushMatrix();
-    ofScale(1.,ofClamp(-1*position/fadeSize,0.,1.));
+    ofScale(ofClamp(abs(position+width*current)/fadeSize,0.,1.),1.);
     fade.draw(0,0);
     ofPopMatrix();
     ofPushMatrix();
     ofTranslate(width,height);
     ofRotateZ(-180);
-    ofScale(1.,ofClamp((position+texHeight-height)/fadeSize,0.,1.));
+    ofScale(ofClamp(abs(position+width*current)/fadeSize,0.,1.),1.);
     fade.draw(0,0);
     ofPopMatrix();
+    if(indicator){
+        ofEnableBlendMode(OF_BLENDMODE_ADD);
+        ofFill();
+        ofPushMatrix();
+        ofTranslate(width*0.5-indicatorWidth*0.5,height*0.95);
+        for(int i=0;i<tex.size();i++){
+            ofSetColor(127,100);
+            ofCircle(i*indicatorGap,0,indicatorSize);
+        }
+        ofSetColor(127,200);
+        ofCircle(indicatorPos,0,indicatorSize);
+        ofPopMatrix();
+        
+        if((indicatorPos-current*indicatorGap)>0)
+            indicatorPos-=1.;
+        else if((indicatorPos-current*indicatorGap)<0)
+            indicatorPos+=1.;
+    }
     ofFbo::end();
     ofPopStyle();
         
     float dt=1./ofGetFrameRate();
-        
-    if(texHeight<height && !mouseDown){
-        destination = 0;
-    }
-    else if(position>0 && !mouseDown){
-        destination = 0;
-    }
-    else if(position< (height-texHeight) && !mouseDown){
-        destination = (height-texHeight);
-    }
         
     float accel=destination-position;
     accel*=(K/MASS);
@@ -97,33 +119,43 @@ void ofxScrollable::update(){
     velocity+=(accel*dt);
     position+=(velocity*dt);
 }
+
+void ofxSwipeable::setIndicator(bool i){
+    indicator = i;
+}
     
-void ofxScrollable::setMouseDown(bool m){
-    mouseDown = m;
+void ofxSwipeable::setMouse(bool m){
+    mouse = m;
 }
 
-void ofxScrollable::mousePressed(ofMouseEventArgs& event){
-    if(mouseDown){
-        mouse=event.y;
-        mouseOrigin=mouse;
-        posOrigin=position;
+void ofxSwipeable::mousePressed(ofMouseEventArgs& event){
+    if(mouse){
+        mouseOrigin=event.x;
+        desOrigin=destination;
     }
 }
     
-void ofxScrollable::mouseDragged(ofMouseEventArgs& event){
-    if(mouseDown){
-        mouseDiff = event.y - mouse;
-        mouse = event.y;
-        destination = posOrigin + (mouse - mouseOrigin);
+void ofxSwipeable::mouseDragged(ofMouseEventArgs& event){
+    if(mouse){
+        destination = desOrigin + (event.x - mouseOrigin);
     }
 }
     
-void ofxScrollable::mouseReleased(ofMouseEventArgs& event){
-    mouseDown = false;
+void ofxSwipeable::mouseReleased(ofMouseEventArgs& event){
+    if(mouse){
+        destination = desOrigin + (event.x - mouseOrigin);
+        int d = ceil(abs(destination-desOrigin)/width);
+        if((destination-desOrigin)>0)
+            d*=-1;
+        current = ofClamp(current+d,0,tex.size()-1);
+        destination =-current*width;
+        mouse = false;
+    }
 }
 
-void ofxScrollable::reset(){
+void ofxSwipeable::reset(){
     position=0;
     destination=0;
     velocity=0;
+    current=0;
 }
