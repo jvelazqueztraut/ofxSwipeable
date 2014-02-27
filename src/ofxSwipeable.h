@@ -46,7 +46,7 @@ public:
     float desOrigin;
 
     bool indicator;
-    float indicatorPos;
+    int indicatorPos;
     float indicatorSize;
     float indicatorGap;
     float indicatorWidth;

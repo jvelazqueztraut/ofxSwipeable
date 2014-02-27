@@ -38,6 +38,7 @@ void ofxSwipeable::load(vector<string> path, float w, float h, float f){
         tex[i].setAnchorPercent(0.5,0.5);
     }
     
+    indicatorPos = 0;
     indicatorSize = 5;
     indicatorGap = 20;
     indicatorWidth = (tex.size()-1) * indicatorGap;
@@ -66,10 +67,9 @@ void ofxSwipeable::update(){
         
     ofPushStyle();
     ofFbo::begin();
+    ofClear(0, 0);
     glBlendFuncSeparate(GL_ONE, GL_SRC_COLOR, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    ofEnableBlendMode(OF_BLENDMODE_ADD);
-    ofClear(255,255);
-	ofClear(0, 0);
+    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
     ofSetColor(255);
     ofPushMatrix();
     ofTranslate(position,0);
@@ -91,22 +91,23 @@ void ofxSwipeable::update(){
     fade.draw(0,0);
     ofPopMatrix();
     if(indicator){
-        ofEnableBlendMode(OF_BLENDMODE_ADD);
+        glBlendFuncSeparate(GL_ONE, GL_SRC_COLOR, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        ofEnableBlendMode(OF_BLENDMODE_ALPHA);
         ofFill();
         ofPushMatrix();
         ofTranslate(width*0.5-indicatorWidth*0.5,height*0.95);
         for(int i=0;i<tex.size();i++){
-            ofSetColor(127,100);
+            ofSetColor(127,150);
             ofCircle(i*indicatorGap,0,indicatorSize);
         }
-        ofSetColor(127,200);
+        ofSetColor(127,250);
         ofCircle(indicatorPos,0,indicatorSize);
         ofPopMatrix();
         
         if((indicatorPos-current*indicatorGap)>0)
-            indicatorPos-=1.;
+            indicatorPos-=5;
         else if((indicatorPos-current*indicatorGap)<0)
-            indicatorPos+=1.;
+            indicatorPos+=5;
     }
     ofFbo::end();
     ofPopStyle();
