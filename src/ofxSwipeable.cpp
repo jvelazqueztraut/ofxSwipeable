@@ -17,10 +17,6 @@ ofxSwipeable::ofxSwipeable(){
     mouseOrigin=0;
     desOrigin=0;
     
-    ofAddListener(ofEvents().mousePressed,this,&ofxSwipeable::mousePressed);
-    ofAddListener(ofEvents().mouseDragged,this,&ofxSwipeable::mouseDragged);
-    ofAddListener(ofEvents().mouseReleased,this,&ofxSwipeable::mouseReleased);
-    
     indicator = true;
     
     reset();
@@ -60,6 +56,10 @@ void ofxSwipeable::load(vector<string> path, float w, float h, float f){
         }
     }
     fade.loadData(fadePixels);
+    
+    ofAddListener(ofEvents().mousePressed,this,&ofxSwipeable::mousePressed);
+    ofAddListener(ofEvents().mouseDragged,this,&ofxSwipeable::mouseDragged);
+    ofAddListener(ofEvents().mouseReleased,this,&ofxSwipeable::mouseReleased);
 }
     
 void ofxSwipeable::update(){
