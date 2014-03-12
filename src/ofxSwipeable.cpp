@@ -13,9 +13,9 @@
 #define K 30.
 
 ofxSwipeable::ofxSwipeable(){
-    mouse=false;
-    mouseOrigin=0;
-    desOrigin=0;
+    p=false;
+    pOrigin=0;
+    dOrigin=0;
     
     indicator = true;
     
@@ -57,13 +57,9 @@ void ofxSwipeable::load(vector<string> path, float w, float h, float f){
         }
     }
     fade.loadData(fadePixels);
-    
-    ofAddListener(ofEvents().mousePressed,this,&ofxSwipeable::mousePressed);
-    ofAddListener(ofEvents().mouseDragged,this,&ofxSwipeable::mouseDragged);
-    ofAddListener(ofEvents().mouseReleased,this,&ofxSwipeable::mouseReleased);
 }
     
-void ofxSwipeable::update(){
+void ofxSwipeable::update(float dt){
         
     ofPushStyle();
     ofFbo::begin();
@@ -105,14 +101,12 @@ void ofxSwipeable::update(){
         ofPopMatrix();
         
         if((indicatorPos-current*indicatorGap)>0)
-            indicatorPos-=5;
+            indicatorPos-=1;
         else if((indicatorPos-current*indicatorGap)<0)
-            indicatorPos+=5;
+            indicatorPos+=1;
     }
     ofFbo::end();
     ofPopStyle();
-        
-    float dt=1./ofGetFrameRate();
         
     float accel=destination-position;
     accel*=(K/MASS);
@@ -125,33 +119,34 @@ void ofxSwipeable::setIndicator(bool i){
     indicator = i;
 }
     
-void ofxSwipeable::setMouse(bool m){
-    mouse = m;
-}
-
-void ofxSwipeable::mousePressed(ofMouseEventArgs& event){
-    if(mouse){
-        mouseOrigin=event.x;
-        desOrigin=destination;
-    }
+bool ofxSwipeable::pressed(ofPoint pos, int ID){
+    p = true;
+    pID = ID;
+    pOrigin=pos.x;
+    dOrigin=destination;
+    return true;
 }
     
-void ofxSwipeable::mouseDragged(ofMouseEventArgs& event){
-    if(mouse){
-        destination = desOrigin + (event.x - mouseOrigin);
+bool ofxSwipeable::dragged(ofPoint pos, int ID){
+    if(p && pID==ID){
+        destination = dOrigin + (pos.x - pOrigin);
+        return true;
     }
+    return false;
 }
     
-void ofxSwipeable::mouseReleased(ofMouseEventArgs& event){
-    if(mouse){
-        destination = desOrigin + (event.x - mouseOrigin);
-        int d = ceil(abs(destination-desOrigin)/width);
-        if((destination-desOrigin)>0)
+bool ofxSwipeable::released(ofPoint pos, int ID){
+    if(p && pID==ID){
+        destination = dOrigin + (pos.x - pOrigin);
+        int d = round(abs(destination-dOrigin)/width);
+        if((destination-dOrigin)>0)
             d*=-1;
         current = ofClamp(current+d,0,tex.size()-1);
         destination =-current*width;
-        mouse = false;
+        p = false;
+        return true;
     }
+    return false;
 }
 
 void ofxSwipeable::reset(){
@@ -159,4 +154,5 @@ void ofxSwipeable::reset(){
     destination=0;
     velocity=0;
     current=0;
+    p=false;
 }

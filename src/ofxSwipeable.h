@@ -18,15 +18,13 @@ public:
     
     void load(vector<string> path, float w, float h, float f=50.);
     
-    void update();
+    void update(float dt);
     
     void reset();
-        
-    void setMouse(bool m);
-    
-    void mouseDragged(ofMouseEventArgs& event);
-    void mousePressed(ofMouseEventArgs& event);
-    void mouseReleased(ofMouseEventArgs& event);
+            
+    bool pressed(ofPoint pos,int ID=0);
+    bool dragged(ofPoint pos,int ID=0);
+    bool released(ofPoint pos,int ID=0);
     
     void setIndicator(bool i);
             
@@ -41,9 +39,10 @@ public:
     float destination;
     float velocity;
     
-    bool mouse;
-    float mouseOrigin;
-    float desOrigin;
+    bool    p;
+    int     pID;
+    float   pOrigin;
+    float   dOrigin;
 
     bool indicator;
     int indicatorPos;
