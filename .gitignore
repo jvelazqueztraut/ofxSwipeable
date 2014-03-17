@@ -9,7 +9,7 @@
 !example/addons.make
 
 # ignore bin folders' contents, except data folder therein
-exampple/bin/*
+example/bin/*
 !example/bin/data/
 
 # Compiled Object files
@@ -57,6 +57,7 @@ example/obj/
 #*.jpeg
 *.mov
 *.DS_Store
+*.rc
 
 # don't ignore the .gitignore file
 !.gitignore
