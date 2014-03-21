@@ -60,12 +60,10 @@ void ofxSwipeable::load(vector<string> path, float w, float h, float f){
 }
     
 void ofxSwipeable::update(float dt){
-        
     ofPushStyle();
     ofFbo::begin();
     ofClear(0, 0);
     glBlendFuncSeparate(GL_ONE, GL_SRC_COLOR, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
     ofSetColor(255);
     ofPushMatrix();
     ofTranslate(position,0);
@@ -75,20 +73,7 @@ void ofxSwipeable::update(float dt){
         }
     }
     ofPopMatrix();
-    ofEnableBlendMode(OF_BLENDMODE_SUBTRACT);
-    ofPushMatrix();
-    ofScale(ofClamp(abs(position+width*current)/fadeSize,0.,1.),1.);
-    fade.draw(0,0);
-    ofPopMatrix();
-    ofPushMatrix();
-    ofTranslate(width,height);
-    ofRotateZ(-180);
-    ofScale(ofClamp(abs(position+width*current)/fadeSize,0.,1.),1.);
-    fade.draw(0,0);
-    ofPopMatrix();
     if(indicator){
-        glBlendFuncSeparate(GL_ONE, GL_SRC_COLOR, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-        ofEnableBlendMode(OF_BLENDMODE_ALPHA);
         ofFill();
         ofPushMatrix();
         ofTranslate(width*0.5-indicatorWidth*0.5,height*0.95);
@@ -105,6 +90,17 @@ void ofxSwipeable::update(float dt){
         else if((indicatorPos-current*indicatorGap)<0)
             indicatorPos+=1;
     }
+    ofEnableBlendMode(OF_BLENDMODE_SUBTRACT);
+    ofPushMatrix();
+    ofScale(ofClamp(abs(position+width*current)/fadeSize,0.,1.),1.);
+    fade.draw(0,0);
+    ofPopMatrix();
+    ofPushMatrix();
+    ofTranslate(width,height);
+    ofRotateZ(-180);
+    ofScale(ofClamp(abs(position+width*current)/fadeSize,0.,1.),1.);
+    fade.draw(0,0);
+    ofPopMatrix();
     ofFbo::end();
     ofPopStyle();
         
@@ -113,6 +109,10 @@ void ofxSwipeable::update(float dt){
     accel-=(DAMPING/MASS)*velocity;
     velocity+=(accel*dt);
     position+=(velocity*dt);
+}
+
+void ofxSwipeable::draw(int x, int y){
+    ofFbo::draw(x,y);
 }
 
 void ofxSwipeable::setIndicator(bool i){

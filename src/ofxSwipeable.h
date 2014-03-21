@@ -20,6 +20,8 @@ public:
     
     void update(float dt);
     
+    void draw(int x, int y);
+        
     void reset();
             
     bool pressed(ofPoint pos,int ID=0);

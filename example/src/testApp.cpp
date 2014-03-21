@@ -14,11 +14,16 @@ void testApp::setup(){
 
     text.load(path,FRAME_WIDTH,FRAME_HEIGHT,FADE_SIZE);
     text.setAnchorPercent(0.5,0.5);
+    
+    time = 0;
 }
 
 //--------------------------------------------------------------
 void testApp::update(){
-    text.update();
+    float t = ofGetElapsedTimef();
+    float dt = t -time;
+    time = t;
+    text.update(dt);
 }
 
 //--------------------------------------------------------------
@@ -56,17 +61,19 @@ void testApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void testApp::mouseDragged(int x, int y, int button){
+    text.dragged(ofPoint(x,y));
 }
 
 //--------------------------------------------------------------
 void testApp::mousePressed(int x, int y, int button){
     if(x<ofGetWidth()*0.5){
-        text.setMouse(true);
+        text.pressed(ofPoint(x,y));
     }
 }
 
 //--------------------------------------------------------------
 void testApp::mouseReleased(int x, int y, int button){
+    text.released(ofPoint(x,y));
 }
 
 //--------------------------------------------------------------
