@@ -21,4 +21,5 @@ class testApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
     
     ofxSwipeable text;
+    float time;
 };
