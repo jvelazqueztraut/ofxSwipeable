@@ -23,18 +23,25 @@ ofxSwipeable::ofxSwipeable(){
 }
 
 void ofxSwipeable::load(vector<string> path, float w, float h, float f){
+    vector<ofPixels> pix;
+    pix.assign(path.size(),ofPixels());
+    for(int i=0;i<path.size();i++){
+        ofLoadImage(pix[i], path[i]);
+    }
+    load(pix,w,h,f);
+}
+
+void ofxSwipeable::load(vector<ofPixels> pix, float w, float h, float f){
     width = w;
     height = h;
     
     ofFbo::allocate(width,height,GL_RGBA32F_ARB);
     
-    tex.assign(path.size(),ofTexture());
-    for(int i=0;i<path.size();i++){
-        ofPixels imagePixels;
-        ofLoadImage(imagePixels, path[i]);
-        texWidth = imagePixels.getWidth();
-        texHeight = imagePixels.getHeight();
-        tex[i].loadData(imagePixels);
+    tex.assign(pix.size(),ofTexture());
+    for(int i=0;i<pix.size();i++){
+        tex[i].loadData(pix[i]);
+        texWidth = tex[i].getWidth();
+        texHeight = tex[i].getHeight();
         tex[i].setAnchorPercent(0.5,0.5);
     }
     

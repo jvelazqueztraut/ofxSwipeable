@@ -16,6 +16,7 @@ public:
     
     ~ofxSwipeable(){};
     
+    void load(vector<ofPixels> pix, float w, float h, float f=50.);
     void load(vector<string> path, float w, float h, float f=50.);
     
     void update(float dt);
