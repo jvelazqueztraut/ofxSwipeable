@@ -1,30 +1,31 @@
 //
-//  ofxScrollable.h
-//  ofxScrollable
+//  ofxSwipeableText.h
+//  example
 //
-//  Created by jvelazqueztraut on 18/02/14.
+//  Created by Wanda on 26/03/14.
 //
 //
 #pragma once
 
 #include "ofMain.h"
+#include "ofxTextSuite.h"
 
-class ofxSwipeable{
+class ofxSwipeableText{
 public:
     
-    ofxSwipeable();
+    ofxSwipeableText();
     
-    ~ofxSwipeable(){};
+    ~ofxSwipeableText(){};
     
-    void load(vector<ofPixels> pix, float w, float h, float f=50.);
-    void load(vector<string> path, float w, float h, float f=50.);
+    void load(vector<string> _texts, int w, int h, float f=50.);
+    void setStyle(string f, int s, ofColor c,int m);
     
     void update(float dt);
     
     void draw(int x, int y);
-        
+    
     void reset();
-            
+    
     bool pressed(ofPoint pos,int ID=0);
     bool dragged(ofPoint pos,int ID=0);
     bool released(ofPoint pos,int ID=0);
@@ -67,5 +68,9 @@ private:
     
     ofMatrix4x4 reference;
     
-    vector<ofTexture> tex;
+    vector<ofxTextBlock> texts;
+    string font;
+    int size;
+    ofColor color;
+    int margin;
 };

@@ -1,0 +1,2 @@
+ofxSwipeable
+ofxTextSuite

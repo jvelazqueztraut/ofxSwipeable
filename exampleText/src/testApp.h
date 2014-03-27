@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxSwipeable.h"
+#include "ofxSwipeableText.h"
 
 class testApp : public ofBaseApp{
 
@@ -20,6 +20,6 @@ class testApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
     
-    ofxSwipeable test;
-    float time;
+    ofxSwipeableText text;
+    float time;		
 };
