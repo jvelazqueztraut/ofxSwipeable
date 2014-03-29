@@ -212,6 +212,7 @@ bool ofxSwipeable::pressed(ofPoint pos, int ID){
     
 bool ofxSwipeable::dragged(ofPoint pos, int ID){
     if(p && pID==ID){
+        pos+=ofPoint(anchor.x*width,anchor.y*height);
         destination = dOrigin + (pos.x - pOrigin);
         return true;
     }
@@ -220,6 +221,7 @@ bool ofxSwipeable::dragged(ofPoint pos, int ID){
     
 bool ofxSwipeable::released(ofPoint pos, int ID){
     if(p && pID==ID){
+        pos+=ofPoint(anchor.x*width,anchor.y*height);
         destination = dOrigin + (pos.x - pOrigin);
         int d = round(abs(destination-dOrigin)/width);
         if((destination-dOrigin)>0)

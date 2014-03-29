@@ -207,6 +207,7 @@ bool ofxSwipeableText::pressed(ofPoint pos, int ID){
 
 bool ofxSwipeableText::dragged(ofPoint pos, int ID){
     if(p && pID==ID){
+        pos+=ofPoint(anchor.x*width,anchor.y*height);
         destination = dOrigin + (pos.x - pOrigin);
         return true;
     }
@@ -215,6 +216,7 @@ bool ofxSwipeableText::dragged(ofPoint pos, int ID){
 
 bool ofxSwipeableText::released(ofPoint pos, int ID){
     if(p && pID==ID){
+        pos+=ofPoint(anchor.x*width,anchor.y*height);
         destination = dOrigin + (pos.x - pOrigin);
         int d = round(abs(destination-dOrigin)/width);
         if((destination-dOrigin)>0)

@@ -32,6 +32,7 @@ void testApp::draw(){
     ofSetColor(255);
     
     //test.draw(ofGetMouseX(),ofGetMouseY());
+    ofTranslate(ofGetMouseX()*0.5,ofGetMouseY()*0.5);
     test.draw(ofGetWidth()*0.25,ofGetHeight()*0.5);
 
     
