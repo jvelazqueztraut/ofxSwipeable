@@ -9,7 +9,7 @@
 
 #include "ofMain.h"
 
-class ofxSwipeable{
+class ofxSwipeable: public ofFbo{
 public:
     
     ofxSwipeable();
@@ -29,18 +29,14 @@ public:
     bool dragged(ofPoint pos,int ID=0);
     bool released(ofPoint pos,int ID=0);
     
-    float getWidth();
-    float getHeight();
-    
-    void setAnchorPercent(float xPct, float yPct);
-    
     void setIndicator(bool i);
-    void setIndicatorStyle(float h, float s, float g);
-    
-private:
+            
     float width,height;
+    
     int current;
-    ofVec2f anchor;
+    
+    vector<ofTexture> tex;
+    float texWidth,texHeight;
     
     float position;
     float destination;
@@ -50,22 +46,13 @@ private:
     int     pID;
     float   pOrigin;
     float   dOrigin;
-    
+
     bool indicator;
-    vector<int> indicators;
-    float indicatorPos;
-    float indicatorVel;
+    int indicatorPos;
     float indicatorSize;
     float indicatorGap;
-    float indicatorHeight;
+    float indicatorWidth;
     
+    ofTexture fade;
     float fadeSize;
-    float fade;
-    ofFloatPixels fadePixels;
-    ofTexture fadeTex;
-    ofShader shader;
-    
-    ofMatrix4x4 reference;
-    
-    vector<ofTexture> tex;
 };

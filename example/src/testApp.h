@@ -20,6 +20,6 @@ class testApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
     
-    ofxSwipeable test;
+    ofxSwipeable text;
     float time;
 };

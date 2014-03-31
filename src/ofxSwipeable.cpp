@@ -17,33 +17,7 @@ ofxSwipeable::ofxSwipeable(){
     pOrigin=0;
     dOrigin=0;
     
-    current = 0;
-    
     indicator = true;
-    indicatorPos=indicatorVel=0.;
-    indicatorSize=5;
-    indicatorGap=0.06f;
-    indicatorHeight=0.95f;
-    
-    anchor.set(0.,0.);
-    
-    string shaderProgram =
-    "#extension GL_ARB_texture_rectangle: enable\n\
-    \n\
-    uniform vec2 offset;\n\
-    uniform sampler2DRect fade;\n\
-    uniform sampler2DRect tex;\n\
-    \n\
-    void main (void){\n\
-    vec2 posTex = gl_TexCoord[0].st;\n\
-    vec2 posFade = gl_FragCoord.xy - offset;\n\
-    vec4 colorFade = texture2DRect(fade,posFade);\n\
-    vec4 colorTex = texture2DRect(tex,posTex);\n\
-    gl_FragColor = vec4( colorTex.rgb , colorTex.a * colorFade.a);\n\
-    }";
-    
-    shader.setupShaderFromSource(GL_FRAGMENT_SHADER, shaderProgram);
-    shader.linkProgram();
     
     reset();
 }
@@ -61,148 +35,98 @@ void ofxSwipeable::load(vector<ofPixels> pix, float w, float h, float f){
     width = w;
     height = h;
     
-    //ofFbo::allocate(width,height,GL_RGBA32F_ARB);
+    ofFbo::allocate(width,height,GL_RGBA32F_ARB);
     
     tex.assign(pix.size(),ofTexture());
     for(int i=0;i<pix.size();i++){
         tex[i].loadData(pix[i]);
+        texWidth = tex[i].getWidth();
+        texHeight = tex[i].getHeight();
         tex[i].setAnchorPercent(0.5,0.5);
     }
     
-    indicators.assign(tex.size(),0);
-    for(int i=0;i<indicators.size();i++){
-        indicators[i]=(i-0.5*indicators.size())*(width*indicatorGap);
-    }
-    indicatorPos=indicators[current];
+    indicatorPos = 0;
+    indicatorSize = 5;
+    indicatorGap = 20;
+    indicatorWidth = (tex.size()-1) * indicatorGap;
     
     fadeSize = f;
-    fadePixels.allocate(width,1,OF_PIXELS_RGBA);
+    ofFloatPixels fadePixels;
+    fadePixels.allocate(fadeSize,height,OF_PIXELS_RGBA);
     int i=0;
-    for(int x=0;x<width;x++){
-        fadePixels[i+0]=1.;
-        fadePixels[i+1]=1.;
-        fadePixels[i+2]=1.;
-        fadePixels[i+3]=1.;
-        i+=4;
+    for(int y=0;y<(int)height;y++) {
+        for(int x=0;x<(int)fadeSize;x++){
+            fadePixels[i+0]=0.;
+            fadePixels[i+1]=0.;
+            fadePixels[i+2]=0.;
+            fadePixels[i+3]=1.-(x*x)/(fadeSize*fadeSize); //QUADRATIC_EASE_IN
+            i+=4;
+        }
     }
-    fadePixels[0+3]=0.;
-    fadePixels[(i-4)+3]=0.;
+    fade.loadData(fadePixels);
 }
-
+    
 void ofxSwipeable::update(float dt){
-    fade = ofClamp(abs(position+width*current),0.,fadeSize);
-    int i=0;
-    for(int x=0;x<(int)fade;x++){
-        fadePixels[i+3]=(x*x)/(fade*fade); //QUADRATIC_EASE_IN
-        i+=4;
+    ofPushStyle();
+    ofFbo::begin();
+    ofClear(0, 0);
+    glBlendFuncSeparate(GL_ONE, GL_SRC_COLOR, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    ofSetColor(255);
+    ofPushMatrix();
+    ofTranslate(position,0);
+    for(int i=0;i<tex.size();i++){
+        if((position+i*width+width)>0 && (position+i*width)<width){
+            tex[i].draw(width*0.5+i*width,height*0.5);
+        }
     }
-    for(int x=(int)fade;x<width-(int)fade;x++){
-        fadePixels[i+3]=1.;
-        i+=4;
+    ofPopMatrix();
+    if(indicator){
+        ofFill();
+        ofPushMatrix();
+        ofTranslate(width*0.5-indicatorWidth*0.5,height*0.95);
+        for(int i=0;i<tex.size();i++){
+            ofSetColor(127,150);
+            ofCircle(i*indicatorGap,0,indicatorSize);
+        }
+        ofSetColor(127,250);
+        ofCircle(indicatorPos,0,indicatorSize);
+        ofPopMatrix();
+        
+        if((indicatorPos-current*indicatorGap)>0)
+            indicatorPos-=1;
+        else if((indicatorPos-current*indicatorGap)<0)
+            indicatorPos+=1;
     }
-    for(int x=(width-(int)fade);x<width;x++){
-        int xInv=width-x;
-        fadePixels[i+3]=(xInv*xInv)/(fade*fade); //QUADRATIC_EASE_OUT
-        i+=4;
-    }
-    fadePixels[0+3]=0.;
-    fadePixels[(i-4)+3]=0.;
-    fadeTex.loadData(fadePixels);
+    ofEnableBlendMode(OF_BLENDMODE_SUBTRACT);
+    ofPushMatrix();
+    ofScale(ofClamp(abs(position+width*current)/fadeSize,0.,1.),1.);
+    fade.draw(0,0);
+    ofPopMatrix();
+    ofPushMatrix();
+    ofTranslate(width,height);
+    ofRotateZ(-180);
+    ofScale(ofClamp(abs(position+width*current)/fadeSize,0.,1.),1.);
+    fade.draw(0,0);
+    ofPopMatrix();
+    ofFbo::end();
+    ofPopStyle();
         
     float accel=destination-position;
     accel*=(K/MASS);
     accel-=(DAMPING/MASS)*velocity;
     velocity+=(accel*dt);
     position+=(velocity*dt);
-    
-    if(indicator){
-        float indicatorAccel=indicators[current]-indicatorPos;
-        indicatorAccel*=(K/MASS);
-        indicatorAccel-=(DAMPING/MASS)*indicatorVel;
-        indicatorVel+=(indicatorAccel*dt);
-        indicatorPos+=(indicatorVel*dt);
-    }
-    
-    GLfloat m[16];
-    glGetFloatv(GL_MODELVIEW_MATRIX, m);
-    reference = ofMatrix4x4(m);
 }
 
 void ofxSwipeable::draw(int x, int y){
-    ofPushStyle();
-    ofSetColor(255);
-    ofPushMatrix();
-    ofTranslate(x-anchor.x*width,y-anchor.y*height);
-    
-    GLfloat mFade[16];
-    glGetFloatv(GL_MODELVIEW_MATRIX, mFade);
-    ofMatrix4x4 matFade(mFade);
-    ofVec3f offsetFade = (ofPoint(0,0) * reference.getInverse()) * matFade;
-    
-    ofPushMatrix();
-    ofTranslate(position,0);
-    for(int i=0;i<tex.size();i++){
-        if((position+i*width+width)>0 && (position+i*width)<width){
-            shader.begin();
-            shader.setUniform2f("offset",offsetFade.x,offsetFade.y);
-            shader.setUniformTexture("fade", fadeTex, 1);
-            shader.setUniformTexture("tex", tex[i], 0);
-            tex[i].draw(width*0.5+i*width,height*0.5);
-            shader.end();
-        }
-    }
-    ofPopMatrix();
-    
-    if(indicator){
-        ofFill();
-        ofPushMatrix();
-        ofTranslate(width*0.5,height*indicatorHeight);
-        for(int i=0;i<indicators.size();i++){
-            ofSetColor(255,150);
-            ofCircle(indicators[i],0,indicatorSize);
-        }
-        ofSetColor(255,250);
-        ofCircle(indicatorPos,0,indicatorSize);
-        ofPopMatrix();
-    }
-    
-    ofPopMatrix();
-    ofPopStyle();
+    ofFbo::draw(x,y);
 }
 
 void ofxSwipeable::setIndicator(bool i){
     indicator = i;
 }
-
-void ofxSwipeable::setIndicatorStyle(float h, float s, float g){
-    indicatorHeight=h;
-    indicatorSize=s;
-    indicatorGap=g;
-}
-
-float ofxSwipeable::getWidth(){
-    return width;
-}
-
-float ofxSwipeable::getHeight(){
-    return height;
-}
-
-void ofxSwipeable::setAnchorPercent(float xPct, float yPct){
-    anchor.set(xPct,yPct);
-}
-
+    
 bool ofxSwipeable::pressed(ofPoint pos, int ID){
-    pos+=ofPoint(anchor.x*width,anchor.y*height);
-    if(indicator && abs(pos.y-height*indicatorHeight)<indicatorSize){
-        for(int i=0;i<indicators.size();i++){
-            if(abs(pos.x-width*0.5-indicators[i])<indicatorSize){
-                current = i;
-                destination =-current*width;
-                return true;
-            }
-        }
-    }
     p = true;
     pID = ID;
     pOrigin=pos.x;
@@ -212,7 +136,6 @@ bool ofxSwipeable::pressed(ofPoint pos, int ID){
     
 bool ofxSwipeable::dragged(ofPoint pos, int ID){
     if(p && pID==ID){
-        pos+=ofPoint(anchor.x*width,anchor.y*height);
         destination = dOrigin + (pos.x - pOrigin);
         return true;
     }
@@ -221,7 +144,6 @@ bool ofxSwipeable::dragged(ofPoint pos, int ID){
     
 bool ofxSwipeable::released(ofPoint pos, int ID){
     if(p && pID==ID){
-        pos+=ofPoint(anchor.x*width,anchor.y*height);
         destination = dOrigin + (pos.x - pOrigin);
         int d = round(abs(destination-dOrigin)/width);
         if((destination-dOrigin)>0)
