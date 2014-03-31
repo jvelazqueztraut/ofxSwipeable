@@ -22,7 +22,7 @@ ofxSwipeable::ofxSwipeable(){
     indicator = true;
     indicatorPos=indicatorVel=0.;
     indicatorSize=5;
-    indicatorGap=0.05f;
+    indicatorGap=0.06f;
     indicatorHeight=0.95f;
     
     anchor.set(0.,0.);
