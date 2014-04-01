@@ -145,7 +145,10 @@ bool ofxSwipeable::dragged(ofPoint pos, int ID){
 bool ofxSwipeable::released(ofPoint pos, int ID){
     if(p && pID==ID){
         destination = dOrigin + (pos.x - pOrigin);
-        int d = round(abs(destination-dOrigin)/width);
+        float diff = abs(destination-dOrigin)/width;
+		int d = diff;
+		if((diff-d)>=0.5)
+			d++;
         if((destination-dOrigin)>0)
             d*=-1;
         current = ofClamp(current+d,0,tex.size()-1);
