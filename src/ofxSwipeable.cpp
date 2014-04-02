@@ -17,8 +17,14 @@ ofxSwipeable::ofxSwipeable(){
     pOrigin=0;
     dOrigin=0;
     
-    indicator = true;
+    current = 0;
     
+    indicator = true;
+    indicatorPos=indicatorVel=0.;
+    indicatorSize=5;
+    indicatorGap=0.06f;
+    indicatorHeight=0.95f;
+        
     reset();
 }
 
@@ -45,10 +51,11 @@ void ofxSwipeable::load(vector<ofPixels> pix, float w, float h, float f){
         tex[i].setAnchorPercent(0.5,0.5);
     }
     
-    indicatorPos = 0;
-    indicatorSize = 5;
-    indicatorGap = 20;
-    indicatorWidth = (tex.size()-1) * indicatorGap;
+    indicators.assign(tex.size(),0);
+    for(int i=0;i<indicators.size();i++){
+        indicators[i]=(i-0.5*indicators.size())*(width*indicatorGap);
+    }
+    indicatorPos=indicators[current];
     
     fadeSize = f;
     ofFloatPixels fadePixels;
@@ -83,19 +90,14 @@ void ofxSwipeable::update(float dt){
     if(indicator){
         ofFill();
         ofPushMatrix();
-        ofTranslate(width*0.5-indicatorWidth*0.5,height*0.95);
-        for(int i=0;i<tex.size();i++){
-            ofSetColor(127,150);
-            ofCircle(i*indicatorGap,0,indicatorSize);
+        ofTranslate(width*0.5,height*indicatorHeight);
+        for(int i=0;i<indicators.size();i++){
+            ofSetColor(255,150);
+            ofCircle(indicators[i],0,indicatorSize);
         }
-        ofSetColor(127,250);
+        ofSetColor(255,250);
         ofCircle(indicatorPos,0,indicatorSize);
         ofPopMatrix();
-        
-        if((indicatorPos-current*indicatorGap)>0)
-            indicatorPos-=1;
-        else if((indicatorPos-current*indicatorGap)<0)
-            indicatorPos+=1;
     }
     ofEnableBlendMode(OF_BLENDMODE_SUBTRACT);
     ofPushMatrix();
@@ -116,17 +118,46 @@ void ofxSwipeable::update(float dt){
     accel-=(DAMPING/MASS)*velocity;
     velocity+=(accel*dt);
     position+=(velocity*dt);
+    
+    if(indicator){
+        float indicatorAccel=indicators[current]-indicatorPos;
+        indicatorAccel*=(K/MASS);
+        indicatorAccel-=(DAMPING/MASS)*indicatorVel;
+        indicatorVel+=(indicatorAccel*dt);
+        indicatorPos+=(indicatorVel*dt);
+    }
 }
 
 void ofxSwipeable::draw(int x, int y){
     ofFbo::draw(x,y);
 }
 
+void ofxSwipeable::setAnchorPercent(float xPct, float yPct){
+    anchor.set(xPct,yPct);
+    ofFbo::setAnchorPercent(xPct, yPct);
+}
+
 void ofxSwipeable::setIndicator(bool i){
     indicator = i;
 }
+
+void ofxSwipeable::setIndicatorStyle(float h, float s, float g){
+    indicatorHeight=h;
+    indicatorSize=s;
+    indicatorGap=g;
+}
     
 bool ofxSwipeable::pressed(ofPoint pos, int ID){
+    pos+=ofPoint(anchor.x*width,anchor.y*height);
+    if(indicator && abs(pos.y-height*indicatorHeight)<indicatorSize){
+        for(int i=0;i<indicators.size();i++){
+            if(abs(pos.x-width*0.5-indicators[i])<indicatorSize){
+                current = i;
+                destination =-current*width;
+                return true;
+            }
+        }
+    }
     p = true;
     pID = ID;
     pOrigin=pos.x;

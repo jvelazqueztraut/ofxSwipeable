@@ -30,9 +30,13 @@ public:
     bool released(ofPoint pos,int ID=0);
     
     void setIndicator(bool i);
-            
-    float width,height;
+    void setIndicatorStyle(float h, float s, float g);
     
+    void setAnchorPercent(float xPct, float yPct);
+    
+private:
+    float width,height;
+    ofVec2f anchor;
     int current;
     
     vector<ofTexture> tex;
@@ -48,10 +52,12 @@ public:
     float   dOrigin;
 
     bool indicator;
-    int indicatorPos;
+    vector<int> indicators;
+    float indicatorPos;
+    float indicatorVel;
     float indicatorSize;
     float indicatorGap;
-    float indicatorWidth;
+    float indicatorHeight;
     
     ofTexture fade;
     float fadeSize;
