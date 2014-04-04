@@ -15,6 +15,8 @@ void testApp::setup(){
     text.load(path,FRAME_WIDTH,FRAME_HEIGHT,FADE_SIZE);
     text.setAnchorPercent(0.5,0.5);
     
+    position.set(ofGetWidth()*0.25,ofGetHeight()*0.5);
+    
     time = 0;
 }
 
@@ -28,10 +30,10 @@ void testApp::update(){
 
 //--------------------------------------------------------------
 void testApp::draw(){
-    ofBackground(ofColor::white);
+    ofBackground(ofColor::grey);
     ofSetColor(255);
     
-    text.draw(ofGetWidth()*0.25,ofGetHeight()*0.5);
+    text.draw(position.x,position.y);
         
     //Just squares to show the dimensions of the scrollable zone and fade
     ofSetColor(0);
@@ -61,19 +63,19 @@ void testApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void testApp::mouseDragged(int x, int y, int button){
-    text.dragged(ofPoint(x,y));
+    text.dragged(ofPoint(x,y)-position);
 }
 
 //--------------------------------------------------------------
 void testApp::mousePressed(int x, int y, int button){
     if(x<ofGetWidth()*0.5){
-        text.pressed(ofPoint(x,y));
+        text.pressed(ofPoint(x,y)-position);
     }
 }
 
 //--------------------------------------------------------------
 void testApp::mouseReleased(int x, int y, int button){
-    text.released(ofPoint(x,y));
+    text.released(ofPoint(x,y)-position);
 }
 
 //--------------------------------------------------------------

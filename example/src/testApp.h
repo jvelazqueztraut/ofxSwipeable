@@ -22,4 +22,5 @@ class testApp : public ofBaseApp{
     
     ofxSwipeable text;
     float time;
+    ofPoint position;
 };

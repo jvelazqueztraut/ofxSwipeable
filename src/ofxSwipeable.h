@@ -34,6 +34,8 @@ public:
     
     void setAnchorPercent(float xPct, float yPct);
     
+    int getCurrent();
+    
 private:
     float width,height;
     ofVec2f anchor;

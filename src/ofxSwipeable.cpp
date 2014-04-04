@@ -146,6 +146,10 @@ void ofxSwipeable::setIndicatorStyle(float h, float s, float g){
     indicatorSize=s;
     indicatorGap=g;
 }
+
+int ofxSwipeable::getCurrent(){
+    return current;
+}
     
 bool ofxSwipeable::pressed(ofPoint pos, int ID){
     pos+=ofPoint(anchor.x*width,anchor.y*height);
