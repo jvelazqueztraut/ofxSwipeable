@@ -36,9 +36,9 @@ ofxSwipeable::ofxSwipeable(){
     \n\
     void main (void){\n\
     vec2 posTex = gl_TexCoord[0].st;\n\
-    vec2 posFade = gl_FragCoord.xy - offset;\n\
-    vec4 colorFade = texture2DRect(fade,posFade);\n\
+    vec2 posFade = gl_TexCoord[0].st + offset;\n\
     vec4 colorTex = texture2DRect(tex,posTex);\n\
+    vec4 colorFade = texture2DRect(fade,posFade);\n\
     gl_FragColor = vec4( colorTex.rgb , colorTex.a * colorFade.a);\n\
     }";
     
@@ -74,6 +74,7 @@ void ofxSwipeable::load(vector<ofPixels> pix, float w, float h, float f){
         indicators[i]=(i-0.5*indicators.size())*(width*indicatorGap);
     }
     indicatorPos=indicators[current];
+    if(indicators.size()<=1)indicator=false;
     
     fadeSize = f;
     fadePixels.allocate(width,1,OF_PIXELS_RGBA);
@@ -123,9 +124,9 @@ void ofxSwipeable::update(float dt){
         indicatorPos+=(indicatorVel*dt);
     }
     
-    GLfloat m[16];
+    /*GLfloat m[16];
     glGetFloatv(GL_MODELVIEW_MATRIX, m);
-    reference = ofMatrix4x4(m);
+    reference = ofMatrix4x4(m);*/
 }
 
 void ofxSwipeable::draw(int x, int y){
@@ -134,17 +135,17 @@ void ofxSwipeable::draw(int x, int y){
     ofPushMatrix();
     ofTranslate(x-anchor.x*width,y-anchor.y*height);
     
-    GLfloat mFade[16];
+    /*GLfloat mFade[16];
     glGetFloatv(GL_MODELVIEW_MATRIX, mFade);
     ofMatrix4x4 matFade(mFade);
-    ofVec3f offsetFade = (ofPoint(0,0) * reference.getInverse()) * matFade;
+    ofVec3f offsetFade = (ofPoint(0,0) * reference.getInverse()) * matFade;*/
     
     ofPushMatrix();
     ofTranslate(position,0);
     for(int i=0;i<tex.size();i++){
         if((position+i*width+width)>0 && (position+i*width)<width){
             shader.begin();
-            shader.setUniform2f("offset",offsetFade.x,offsetFade.y);
+            shader.setUniform2f("offset",position+width*i,0);
             shader.setUniformTexture("fade", fadeTex, 1);
             shader.setUniformTexture("tex", tex[i], 0);
             tex[i].draw(width*0.5+i*width,height*0.5);
@@ -186,6 +187,10 @@ float ofxSwipeable::getWidth(){
 
 float ofxSwipeable::getHeight(){
     return height;
+}
+
+int ofxSwipeable::getCurrent(){
+    return current;
 }
 
 void ofxSwipeable::setAnchorPercent(float xPct, float yPct){

@@ -37,6 +37,8 @@ public:
     void setIndicator(bool i);
     void setIndicatorStyle(float h, float s, float g);
     
+    int getCurrent();
+    
 private:
     float width,height;
     int current;
