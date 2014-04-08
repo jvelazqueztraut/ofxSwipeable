@@ -21,9 +21,9 @@ ofxSwipeable::ofxSwipeable(){
     
     indicator = true;
     indicatorPos=indicatorVel=0.;
-    indicatorSize=5;
+    indicatorSize=6;
     indicatorGap=0.06f;
-    indicatorHeight=0.95f;
+    indicatorHeight=0.96f;
         
     reset();
 }
@@ -56,6 +56,7 @@ void ofxSwipeable::load(vector<ofPixels> pix, float w, float h, float f){
         indicators[i]=(i-0.5*indicators.size())*(width*indicatorGap);
     }
     indicatorPos=indicators[current];
+    if(indicators.size()<=1) indicator=false;
     
     fadeSize = f;
     ofFloatPixels fadePixels;
@@ -171,6 +172,7 @@ bool ofxSwipeable::pressed(ofPoint pos, int ID){
     
 bool ofxSwipeable::dragged(ofPoint pos, int ID){
     if(p && pID==ID){
+        pos+=ofPoint(anchor.x*width,anchor.y*height);
         destination = dOrigin + (pos.x - pOrigin);
         return true;
     }
@@ -179,6 +181,7 @@ bool ofxSwipeable::dragged(ofPoint pos, int ID){
     
 bool ofxSwipeable::released(ofPoint pos, int ID){
     if(p && pID==ID){
+        pos+=ofPoint(anchor.x*width,anchor.y*height);
         destination = dOrigin + (pos.x - pOrigin);
         float diff = abs(destination-dOrigin)/width;
 		int d = diff;
