@@ -148,6 +148,13 @@ void ofxSwipeable::setIndicatorStyle(float h, float s, float g){
     indicatorGap=g;
 }
 
+void ofxSwipeable::setCurrent(int c){
+    if(c>=0 && c<tex.size()){
+        current = c;
+        destination =-current*width;
+    }
+}
+
 int ofxSwipeable::getCurrent(){
     return current;
 }

@@ -34,6 +34,7 @@ public:
     
     void setAnchorPercent(float xPct, float yPct);
     
+    void setCurrent(int c);
     int getCurrent();
     
 private:
