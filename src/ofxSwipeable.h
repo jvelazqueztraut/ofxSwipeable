@@ -36,6 +36,8 @@ public:
     
     void setCurrent(int c);
     int getCurrent();
+
+	bool isTransitioning();
     
 private:
     float width,height;

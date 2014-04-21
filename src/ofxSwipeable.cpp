@@ -158,6 +158,10 @@ void ofxSwipeable::setCurrent(int c){
 int ofxSwipeable::getCurrent(){
     return current;
 }
+
+bool ofxSwipeable::isTransitioning(){
+	return ((abs(position-destination)>1) && (velocity>1./ofGetFrameRate()));
+}
     
 bool ofxSwipeable::pressed(ofPoint pos, int ID){
     pos+=ofPoint(anchor.x*width,anchor.y*height);
